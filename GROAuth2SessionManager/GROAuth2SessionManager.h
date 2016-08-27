@@ -20,32 +20,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_7_0
 #import "AFHTTPSessionManager.h"
-#else
-#import "AFHTTPRequestOperationManager.h"
-#endif
 #import "AFOAuthCredential.h"
 
 #ifndef _SECURITY_SECITEM_H_
 #warning Security framework not found in project, or not included in precompiled header. Keychain persistence functionality will not be available.
 #endif
 
-@class AFHTTPRequestOperation;
-
-typedef void(^GROAuth2SessionManagerAuthenticateSuccessBlock)(AFHTTPRequestOperation *operation, id responseObject, AFOAuthCredential *credential);
-typedef void(^GROAuth2SessionManagerAuthenticateFailureBlock)(AFHTTPRequestOperation *operation, id responseObject, NSError *error);
+typedef void(^GROAuth2SessionManagerAuthenticateSuccessBlock)(NSURLSessionDataTask *operation, id responseObject, AFOAuthCredential *credential);
+typedef void(^GROAuth2SessionManagerAuthenticateFailureBlock)(NSURLSessionDataTask *operation, id responseObject, NSError *error);
 
 /**
  `GROAuth2SessionManager` encapsulates common patterns to authenticate against a resource server conforming to the behavior outlined in the OAuth 2.0 specification.
 
  @see RFC 6749 The OAuth 2.0 Authorization Framework: http://tools.ietf.org/html/rfc6749
  */
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_7_0
 @interface GROAuth2SessionManager : AFHTTPSessionManager
-#else
-@interface GROAuth2SessionManager : AFHTTPRequestOperationManager
-#endif
 
 ///------------------------------------------
 /// @name Accessing OAuth 2 Client Properties
@@ -128,7 +118,7 @@ typedef void(^GROAuth2SessionManagerAuthenticateFailureBlock)(AFHTTPRequestOpera
 ///---------------------
 
 /**
- Creates and enqueues an `AFHTTPRequestOperation` to authenticate against the server using a specified username and password, with a designated scope.
+ Creates and enqueues an `NSURLSessionDataTask` to authenticate against the server using a specified username and password, with a designated scope.
 
  @param path The path to be appended to the HTTP client's base URL and used as the request URL.
  @param username The username used for authentication
@@ -140,7 +130,7 @@ typedef void(^GROAuth2SessionManagerAuthenticateFailureBlock)(AFHTTPRequestOpera
 - (void)authenticateUsingOAuthWithPath:(NSString *)path username:(NSString *)username password:(NSString *)password scope:(NSString *)scope success:(GROAuth2SessionManagerAuthenticateSuccessBlock)success failure:(GROAuth2SessionManagerAuthenticateFailureBlock)failure;
 
 /**
- Creates and enqueues an `AFHTTPRequestOperation` to authenticate against the server with a designated scope.
+ Creates and enqueues an `NSURLSessionDataTask` to authenticate against the server with a designated scope.
 
  @param path The path to be appended to the HTTP client's base URL and used as the request URL.
  @param scope The authorization scope
@@ -150,7 +140,7 @@ typedef void(^GROAuth2SessionManagerAuthenticateFailureBlock)(AFHTTPRequestOpera
 - (void)authenticateUsingOAuthWithPath:(NSString *)path scope:(NSString *)scope success:(GROAuth2SessionManagerAuthenticateSuccessBlock)success failure:(GROAuth2SessionManagerAuthenticateFailureBlock)failure;
 
 /**
- Creates and enqueues an `AFHTTPRequestOperation` to authenticate against the server using the specified refresh token.
+ Creates and enqueues an `NSURLSessionDataTask` to authenticate against the server using the specified refresh token.
 
  @param path The path to be appended to the HTTP client's base URL and used as the request URL.
  @param refreshToken The OAuth refresh token
@@ -160,7 +150,7 @@ typedef void(^GROAuth2SessionManagerAuthenticateFailureBlock)(AFHTTPRequestOpera
 - (void)authenticateUsingOAuthWithPath:(NSString *)path refreshToken:(NSString *)refreshToken success:(GROAuth2SessionManagerAuthenticateSuccessBlock)success failure:(GROAuth2SessionManagerAuthenticateFailureBlock)failure;
 
 /**
- Creates and enqueues an `AFHTTPRequestOperation` to authenticate against the server with an authorization code, redirecting to a specified URI upon successful authentication.
+ Creates and enqueues an `NSURLSessionDataTask` to authenticate against the server with an authorization code, redirecting to a specified URI upon successful authentication.
 
  @param path The path to be appended to the HTTP client's base URL and used as the request URL.
  @param code The authorization code
@@ -171,7 +161,7 @@ typedef void(^GROAuth2SessionManagerAuthenticateFailureBlock)(AFHTTPRequestOpera
 - (void)authenticateUsingOAuthWithPath:(NSString *)path code:(NSString *)code redirectURI:(NSString *)redirectURI success:(GROAuth2SessionManagerAuthenticateSuccessBlock)success failure:(GROAuth2SessionManagerAuthenticateFailureBlock)failure;
 
 /**
- Creates and enqueues an `AFHTTPRequestOperation` to authenticate against the server with the specified parameters.
+ Creates and enqueues an `NSURLSessionDataTask` to authenticate against the server with the specified parameters.
 
  @param path The path to be appended to the HTTP client's base URL and used as the request URL.
  @param parameters The parameters to be encoded and set in the request HTTP body.

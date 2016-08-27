@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#import "AFHTTPRequestOperation.h"
+#import "AFHTTPSessionManager.h"
 #import "GROAuth2SessionManager.h"
 
 NSString * const kGROAuthCodeGrantType = @"authorization_code";
@@ -147,55 +147,43 @@ NSString * const kGROAuthRefreshGrantType = @"refresh_token";
     } else {
         urlString = [[NSURL URLWithString:path relativeToURL:[self baseURL]] absoluteString];
     }
-
-    NSError *error;
-    NSMutableURLRequest *mutableRequest = [[AFHTTPRequestSerializer serializer] requestWithMethod:@"POST" URLString:urlString parameters:parameters error:&error];
-    if (error) {
-        failure(nil, nil, error);
-
-        return;
-    }
-
-    AFHTTPRequestOperation *requestOperation = [[AFHTTPRequestOperation alloc] initWithRequest:mutableRequest];
-    [requestOperation setResponseSerializer:[AFJSONResponseSerializer serializer]];
-    [requestOperation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+    
+    [self POST:urlString parameters:parameters progress:nil success:^(NSURLSessionDataTask * _Nonnull operation, id  _Nullable responseObject) {
         if ([responseObject valueForKey:@"error"]) {
             if (failure) {
                 // TODO: Resolve the `error` field into a proper NSError object
                 // http://tools.ietf.org/html/rfc6749#section-5.2
                 failure(operation, responseObject, nil);
             }
-
+            
             return;
         }
-
+        
         NSString *refreshToken = [responseObject valueForKey:@"refresh_token"];
         if (refreshToken == nil || [refreshToken isEqual:[NSNull null]]) {
             refreshToken = [parameters valueForKey:@"refresh_token"];
         }
-
+        
         AFOAuthCredential *credential = [AFOAuthCredential credentialWithOAuthToken:[responseObject valueForKey:@"access_token"] tokenType:[responseObject valueForKey:@"token_type"]];
-
+        
         NSDate *expireDate = [NSDate distantFuture];
         id expiresIn = [responseObject valueForKey:@"expires_in"];
         if (expiresIn != nil && ![expiresIn isEqual:[NSNull null]]) {
             expireDate = [NSDate dateWithTimeIntervalSinceNow:[expiresIn doubleValue]];
         }
-
+        
         [credential setRefreshToken:refreshToken expiration:expireDate];
-
+        
         [self setAuthorizationHeaderWithCredential:credential];
-
+        
         if (success) {
             success(operation, responseObject, credential);
         }
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+    } failure:^(NSURLSessionDataTask * _Nullable operation, NSError * _Nonnull error) {
         if (failure) {
-            failure(operation, operation.responseObject, error);
+            failure(operation, nil, error);
         }
     }];
-
-    [requestOperation start];
 }
 
 @end
